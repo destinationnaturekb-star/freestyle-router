@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Freestyle Document Router</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: #0a0a0a;
+      color: #e0e0e0;
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      min-height: 100dvh;
+      display: flex;
+      justify-content: center;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 480px;
+      padding: 24px 20px;
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .header h1 {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 22px;
+      color: #f5a623;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+    .header p {
+      font-size: 11px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    /* Buttons */
+    .btn {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 600;
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      padding: 18px 24px;
+      width: 100%;
+      transition: opacity 0.15s, transform 0.1s;
+      -webkit-tap-highlight-color: transparent;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .btn-primary {
+      background: #f5a623;
+      color: #0a0a0a;
+    }
+    .btn-ghost {
+      background: transparent;
+      color: #888;
+      font-size: 15px;
+      padding: 12px;
+      margin-top: 8px;
+    }
+
+    /* Dropdowns */
+    .field { margin-bottom: 20px; }
+    .field label {
+      display: block;
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .field select {
+      width: 100%;
+      padding: 14px 16px;
+      background: #1a1a1a;
+      color: #e0e0e0;
+      border: 1px solid #333;
+      border-radius: 8px;
+      font-family: 'DM Mono', monospace;
+      font-size: 15px;
+      appearance: none;
+      -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23888' stroke-width='2' fill='none'/%3E%3C/svg%3E");
+      background-repeat: no-repeat;
+      background-position: right 16px center;
+    }
+    .field select:focus {
+      outline: none;
+      border-color: #f5a623;
+    }
+
+    /* Thumbnail */
+    .thumb {
+      width: 100%;
+      max-height: 280px;
+      object-fit: contain;
+      border-radius: 8px;
+      border: 1px solid #333;
+      margin-bottom: 20px;
+      background: #111;
+    }
+
+    /* Sending */
+    .sending-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      gap: 20px;
+    }
+    .pulse {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: #f5a623;
+      animation: pulse 1.2s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 1; }
+      50% { transform: scale(1.25); opacity: 0.5; }
+    }
+    .sending-text {
+      font-size: 15px;
+      color: #aaa;
+    }
+
+    /* Result cards */
+    .result-card {
+      border-radius: 12px;
+      padding: 24px 20px;
+      margin-bottom: 24px;
+    }
+    .result-card.good {
+      background: #0d2818;
+      border: 1px solid #1a5c2e;
+    }
+    .result-card.warning {
+      background: #2a2008;
+      border: 1px solid #5c4a1a;
+    }
+    .result-card.error {
+      background: #2a0808;
+      border: 1px solid #5c1a1a;
+      cursor: pointer;
+    }
+    .result-icon { font-size: 36px; margin-bottom: 12px; }
+    .result-title {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+    .result-card.good .result-title { color: #4ade80; }
+    .result-card.warning .result-title { color: #facc15; }
+    .result-card.error .result-title { color: #f87171; }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #ffffff0d;
+      font-size: 13px;
+    }
+    .result-row:last-child { border-bottom: none; }
+    .result-label { color: #888; }
+    .result-value { color: #e0e0e0; text-align: right; max-width: 60%; }
+
+    .quality-note {
+      font-size: 12px;
+      color: #facc15;
+      margin-top: 12px;
+      text-align: center;
+    }
+
+    /* Hidden */
+    .file-input { display: none; }
+    .hidden { display: none !important; }
+
+    /* Screens */
+    .screen { display: none; flex-direction: column; }
+    .screen.active { display: flex; flex: 1; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Freestyle Router</h1>
+      <p>Upload docs — we route them for you</p>
+    </div>
+
+    <!-- SCREEN 1: CAPTURE -->
+    <div id="capture" class="screen active">
+      <button class="btn btn-primary" id="captureBtn">&#128247; Upload Document</button>
+      <input type="file" accept="image/*" capture="environment" class="file-input" id="cameraInput">
+    </div>
+
+    <!-- SCREEN 2: CLASSIFY -->
+    <div id="classify" class="screen">
+      <img id="thumb" class="thumb" alt="Document preview">
+
+      <div class="field">
+        <label>What is this document?</label>
+        <select id="docTypeSelect">
+          <option value="">-- Select --</option>
+          <option value="BOL">BOL</option>
+          <option value="LUMPER_RECEIPT">Lumper Receipt</option>
+          <option value="SCALE_TICKET">Scale Ticket</option>
+          <option value="FUEL_RECEIPT">Fuel Receipt</option>
+          <option value="REIMBURSEMENT_RECEIPT">Reimbursement</option>
+          <option value="RATE_CONFIRMATION">Rate Confirmation</option>
+          <option value="INSPECTION_REPORT">Inspection Report</option>
+          <option value="OTHER">Other</option>
+        </select>
+      </div>
+
+      <div class="field hidden" id="dispatcherField">
+        <label>Your dispatcher</label>
+        <select id="dispatcherSelect">
+          <option value="">-- Select --</option>
+          <option value="Bobby">Bobby</option>
+          <option value="Nikita">Nikita</option>
+          <option value="Other">Other</option>
+        </select>
+      </div>
+
+      <button class="btn btn-primary" id="sendBtn" disabled>SEND &#8594;</button>
+      <button class="btn btn-ghost" id="retakeBtn">&#8617; Retake</button>
+    </div>
+
+    <!-- SCREEN 3: SENDING -->
+    <div id="sending" class="screen">
+      <div class="sending-state">
+        <div class="pulse"></div>
+        <p class="sending-text">Sending...</p>
+      </div>
+    </div>
+
+    <!-- SCREEN 4: DONE -->
+    <div id="done" class="screen">
+      <div id="resultCard" class="result-card good">
+        <div class="result-icon" id="resultIcon"></div>
+        <div class="result-title" id="resultTitle"></div>
+        <div id="resultRows"></div>
+        <div class="quality-note" id="qualityNote"></div>
+      </div>
+      <button class="btn btn-primary" id="anotherBtn">SEND ANOTHER</button>
+    </div>
+  </div>
+
+  <script>
+    // Helpers
+    function $(id) { return document.getElementById(id); }
+    function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+    // Elements
+    const screens   = { capture: $('capture'), classify: $('classify'), sending: $('sending'), done: $('done') };
+    const captureBtn     = $('captureBtn');
+    const cameraInput    = $('cameraInput');
+    const thumb          = $('thumb');
+    const docTypeSelect  = $('docTypeSelect');
+    const dispatcherField = $('dispatcherField');
+    const dispatcherSelect = $('dispatcherSelect');
+    const sendBtn        = $('sendBtn');
+    const retakeBtn      = $('retakeBtn');
+    const resultCard     = $('resultCard');
+    const resultIcon     = $('resultIcon');
+    const resultTitle    = $('resultTitle');
+    const resultRows     = $('resultRows');
+    const qualityNote    = $('qualityNote');
+    const anotherBtn     = $('anotherBtn');
+
+    // State
+    let imgBase64 = null;
+    let imgMediaType = null;
+    let lastError = null;
+
+    function show(name) {
+      Object.keys(screens).forEach(k => screens[k].classList.toggle('active', k === name));
+    }
+
+    // ── SCREEN 1: CAPTURE ──
+    captureBtn.addEventListener('click', () => cameraInput.click());
+
+    cameraInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        imgMediaType = file.type || 'image/jpeg';
+        imgBase64 = reader.result.split(',')[1];
+        thumb.src = reader.result;
+        // Reset classify form
+        docTypeSelect.value = '';
+        dispatcherSelect.value = '';
+        dispatcherField.classList.add('hidden');
+        sendBtn.disabled = true;
+        show('classify');
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    });
+
+    // ── SCREEN 2: CLASSIFY ──
+    docTypeSelect.addEventListener('change', () => {
+      const type = docTypeSelect.value;
+      // Show dispatcher dropdown only for BOL
+      if (type === 'BOL') {
+        dispatcherField.classList.remove('hidden');
+      } else {
+        dispatcherField.classList.add('hidden');
+        dispatcherSelect.value = '';
+      }
+      updateSendBtn();
+    });
+
+    dispatcherSelect.addEventListener('change', updateSendBtn);
+
+    function updateSendBtn() {
+      const type = docTypeSelect.value;
+      if (!type) { sendBtn.disabled = true; return; }
+      // If BOL, require dispatcher
+      if (type === 'BOL' && !dispatcherSelect.value) { sendBtn.disabled = true; return; }
+      sendBtn.disabled = false;
+    }
+
+    retakeBtn.addEventListener('click', () => {
+      imgBase64 = null;
+      imgMediaType = null;
+      show('capture');
+    });
+
+    // ── SEND ──
+    sendBtn.addEventListener('click', async () => {
+      show('sending');
+      lastError = null;
+
+      try {
+        const resp = await fetch('/api/route', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imageBase64: imgBase64,
+            mediaType: imgMediaType,
+            docType: docTypeSelect.value,
+            dispatcherName: dispatcherSelect.value || null,
+          }),
+        });
+
+        if (!resp.ok) {
+          const err = await resp.json().catch(() => ({ error: 'Server error' }));
+          throw new Error(err.error || 'Server error');
+        }
+
+        const data = await resp.json();
+        showDone(data);
+        if (navigator.vibrate) navigator.vibrate([100]);
+
+      } catch (err) {
+        lastError = err.message;
+        showFailed(err.message);
+      }
+    });
+
+    // ── SCREEN 4: DONE ──
+    function showDone(data) {
+      const warn = !!data.warning;
+      resultCard.className = 'result-card ' + (warn ? 'warning' : 'good');
+      resultCard.onclick = null;
+      resultIcon.textContent = warn ? '\u26A0\uFE0F' : '\u2705';
+      resultTitle.textContent = warn ? 'Sent — image may be unclear' : 'Sent';
+
+      let rows = '';
+      rows += row('Type', data.doc_name || data.doc_type);
+      rows += row('Routed to', data.routed_to.join(' + '));
+      if (data.page_info) rows += row('Pages', data.page_info);
+      resultRows.innerHTML = rows;
+
+      qualityNote.textContent = warn ? 'Consider retaking a clearer photo' : '';
+      show('done');
+    }
+
+    function showFailed(msg) {
+      resultCard.className = 'result-card error';
+      resultIcon.textContent = '\u274C';
+      resultTitle.textContent = 'Failed — tap to retry';
+      resultRows.innerHTML = row('Error', msg);
+      qualityNote.textContent = '';
+      resultCard.onclick = () => sendBtn.click();
+      show('done');
+    }
+
+    function row(label, value) {
+      return '<div class="result-row"><span class="result-label">' + esc(label) +
+        '</span><span class="result-value">' + esc(value) + '</span></div>';
+    }
+
+    anotherBtn.addEventListener('click', () => {
+      imgBase64 = null;
+      imgMediaType = null;
+      lastError = null;
+      show('capture');
+    });
+  </script>
+</body>
+</html>

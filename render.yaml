@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: freestyle-router
+    env: node
+    buildCommand: npm install
+    startCommand: node server.js
+    envVars:
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      - key: EMAIL_USER
+        sync: false
+      - key: EMAIL_PASS
+        sync: false
+      - key: EMAIL_DIDO
+        sync: false
+      - key: EMAIL_DISPATCHER
+        sync: false
+      - key: EMAIL_ACCOUNTING
+        sync: false
+      - key: EMAIL_SAFETY
+        sync: false
+      - key: EMAIL_MAINTENANCE
+        sync: false
+      - key: EMAIL_OWNER
+        sync: false
