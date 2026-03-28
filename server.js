@@ -132,7 +132,7 @@ async function sendEmail(to, subject, body, imageBase64, mediaType) {
 // Main route endpoint
 app.post('/api/route', async (req, res) => {
   try {
-    const { imageBase64, mediaType, dispatcherName, docType } = req.body;
+    const { imageBase64, mediaType, dispatcherName, docType, truckNumber } = req.body;
 
     if (!imageBase64 || !mediaType) {
       return res.status(400).json({ error: 'Missing imageBase64 or mediaType' });
@@ -149,8 +149,9 @@ app.post('/api/route', async (req, res) => {
       console.warn('AI classification failed, proceeding with driver-selected type:', aiErr.message);
     }
 
-    // Use driver-selected doc type if provided, otherwise fall back to AI
+    // Use driver-selected doc type if provided, otherwise fall back to OTHER
     const doc_type = docType || 'OTHER';
+    const truck = truckNumber || 'Unknown';
 
     // Step 2: Determine recipients
     const routes = ROUTING[doc_type] || ROUTING.OTHER;
@@ -163,16 +164,21 @@ app.post('/api/route', async (req, res) => {
     const timestamp = new Date().toLocaleString('en-US', { timeZone: 'America/Chicago' });
     const poorQuality = quality === 'blurry' || quality === 'too_dark';
     const subjectPrefix = poorQuality ? `⚠️ ${doc_type} — POOR QUALITY` : doc_type;
-    const subject = `${subjectPrefix} from Driver — ${timestamp}`;
+    const subject = `${subjectPrefix} — ${truck} — ${timestamp}`;
 
-    const body = [
-      `Document type: ${DOC_NAMES[doc_type] || doc_type}`,
-      `Detected: ${note}`,
-      `Page info: ${page_info}`,
+    const bodyLines = [
+      `Truck: ${truck}`,
+      `Document: ${DOC_NAMES[doc_type] || doc_type}`,
+    ];
+    if (doc_type === 'BOL' && dispatcherName) {
+      bodyLines.push(`Dispatcher: ${dispatcherName}`);
+    }
+    bodyLines.push(
       `Quality: ${quality}`,
-      `Dispatcher: ${dispatcherName || 'Not specified'}`,
-      `Uploaded: ${timestamp}`,
-    ].join('\n');
+      `Routed to: ${recipients.map(r => r.label).join(', ')}`,
+      `Time: ${timestamp}`,
+    );
+    const body = bodyLines.join('\n');
 
     await Promise.all(
       recipients.map(r => sendEmail(r.email, subject, body, imageBase64, mediaType))

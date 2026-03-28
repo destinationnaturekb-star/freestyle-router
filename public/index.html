@@ -32,7 +32,7 @@
     /* Header */
     .header {
       text-align: center;
-      margin-bottom: 32px;
+      margin-bottom: 28px;
     }
     .header h1 {
       font-family: 'Barlow Condensed', sans-serif;
@@ -46,6 +46,20 @@
       font-size: 11px;
       color: #666;
       margin-top: 4px;
+    }
+
+    /* Truck badge — shown on screens after selection */
+    .truck-badge {
+      text-align: center;
+      font-size: 12px;
+      color: #f5a623;
+      border: 1px solid #333;
+      border-radius: 6px;
+      padding: 6px 12px;
+      margin-bottom: 20px;
+      display: inline-block;
+      align-self: center;
+      letter-spacing: 1px;
     }
 
     /* Buttons */
@@ -64,11 +78,19 @@
       -webkit-tap-highlight-color: transparent;
     }
     .btn:active { transform: scale(0.97); }
-    .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .btn:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
 
     .btn-primary {
       background: #f5a623;
       color: #0a0a0a;
+    }
+    .btn-outline {
+      background: transparent;
+      color: #f5a623;
+      border: 1px solid #f5a623;
+      margin-top: 12px;
+      font-size: 16px;
+      padding: 14px 20px;
     }
     .btn-ghost {
       background: transparent;
@@ -108,10 +130,22 @@
       border-color: #f5a623;
     }
 
+    /* Large label for truck select screen */
+    .big-label {
+      font-family: 'Barlow Condensed', sans-serif;
+      font-weight: 700;
+      font-size: 20px;
+      color: #e0e0e0;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
     /* Thumbnail */
     .thumb {
       width: 100%;
-      max-height: 280px;
+      max-height: 260px;
       object-fit: contain;
       border-radius: 8px;
       border: 1px solid #333;
@@ -126,22 +160,21 @@
       align-items: center;
       justify-content: center;
       flex: 1;
-      gap: 20px;
+      gap: 16px;
     }
-    .pulse {
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: #f5a623;
+    .sending-icon {
+      font-size: 56px;
       animation: pulse 1.2s ease-in-out infinite;
     }
     @keyframes pulse {
       0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.25); opacity: 0.5; }
+      50% { transform: scale(1.2); opacity: 0.5; }
     }
     .sending-text {
-      font-size: 15px;
-      color: #aaa;
+      font-size: 16px;
+      color: #f5a623;
+      font-family: 'Barlow Condensed', sans-serif;
+      letter-spacing: 1px;
     }
 
     /* Result cards */
@@ -161,7 +194,6 @@
     .result-card.error {
       background: #2a0808;
       border: 1px solid #5c1a1a;
-      cursor: pointer;
     }
     .result-icon { font-size: 36px; margin-bottom: 12px; }
     .result-title {
@@ -208,25 +240,40 @@
       <p>Upload docs — we route them for you</p>
     </div>
 
-    <!-- SCREEN 1: CAPTURE -->
-    <div id="capture" class="screen active">
-      <button class="btn btn-primary" id="captureBtn">&#128247; Upload Document</button>
-      <input type="file" accept="image/*" capture="environment" class="file-input" id="cameraInput">
+    <!-- SCREEN 1: TRUCK SELECT -->
+    <div id="truckSelect" class="screen active">
+      <div class="big-label">Select your truck</div>
+      <div class="field">
+        <select id="truckDropdown">
+          <option value="" disabled selected>Select your truck #</option>
+        </select>
+      </div>
+      <button class="btn btn-primary" id="truckContinueBtn" disabled>CONTINUE &#8594;</button>
     </div>
 
-    <!-- SCREEN 2: CLASSIFY -->
+    <!-- SCREEN 2: CAPTURE -->
+    <div id="capture" class="screen">
+      <div class="truck-badge" id="captureTruck"></div>
+      <button class="btn btn-primary" id="cameraBtn">&#128247; Upload Document</button>
+      <button class="btn btn-outline" id="galleryBtn">&#128193; Upload from Gallery</button>
+      <input type="file" accept="image/*" capture="environment" class="file-input" id="cameraInput">
+      <input type="file" accept="image/*,.pdf" class="file-input" id="galleryInput">
+    </div>
+
+    <!-- SCREEN 3: CLASSIFY -->
     <div id="classify" class="screen">
+      <div class="truck-badge" id="classifyTruck"></div>
       <img id="thumb" class="thumb" alt="Document preview">
 
       <div class="field">
         <label>What is this document?</label>
         <select id="docTypeSelect">
-          <option value="">-- Select --</option>
-          <option value="BOL">BOL</option>
+          <option value="" disabled selected>Select document type</option>
+          <option value="BOL">BOL — Bill of Lading</option>
           <option value="LUMPER_RECEIPT">Lumper Receipt</option>
           <option value="SCALE_TICKET">Scale Ticket</option>
           <option value="FUEL_RECEIPT">Fuel Receipt</option>
-          <option value="REIMBURSEMENT_RECEIPT">Reimbursement</option>
+          <option value="REIMBURSEMENT_RECEIPT">Reimbursement Receipt</option>
           <option value="RATE_CONFIRMATION">Rate Confirmation</option>
           <option value="INSPECTION_REPORT">Inspection Report</option>
           <option value="OTHER">Other</option>
@@ -236,26 +283,26 @@
       <div class="field hidden" id="dispatcherField">
         <label>Your dispatcher</label>
         <select id="dispatcherSelect">
-          <option value="">-- Select --</option>
+          <option value="" disabled selected>Select dispatcher</option>
           <option value="Bobby">Bobby</option>
           <option value="Nikita">Nikita</option>
           <option value="Other">Other</option>
         </select>
       </div>
 
-      <button class="btn btn-primary" id="sendBtn" disabled>SEND &#8594;</button>
+      <button class="btn btn-primary" id="sendBtn" disabled>&#128228; SEND</button>
       <button class="btn btn-ghost" id="retakeBtn">&#8617; Retake</button>
     </div>
 
-    <!-- SCREEN 3: SENDING -->
+    <!-- SCREEN 4: SENDING -->
     <div id="sending" class="screen">
       <div class="sending-state">
-        <div class="pulse"></div>
-        <p class="sending-text">Sending...</p>
+        <div class="sending-icon">&#128196;</div>
+        <div class="sending-text">Sending...</div>
       </div>
     </div>
 
-    <!-- SCREEN 4: DONE -->
+    <!-- SCREEN 5: DONE -->
     <div id="done" class="screen">
       <div id="resultCard" class="result-card good">
         <div class="result-icon" id="resultIcon"></div>
@@ -263,7 +310,8 @@
         <div id="resultRows"></div>
         <div class="quality-note" id="qualityNote"></div>
       </div>
-      <button class="btn btn-primary" id="anotherBtn">SEND ANOTHER</button>
+      <button class="btn btn-primary" id="retryFailBtn" style="display:none;margin-bottom:12px;">RETRY</button>
+      <button class="btn btn-primary" id="anotherBtn">SEND ANOTHER DOCUMENT</button>
     </div>
   </div>
 
@@ -272,36 +320,74 @@
     function $(id) { return document.getElementById(id); }
     function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 
-    // Elements
-    const screens   = { capture: $('capture'), classify: $('classify'), sending: $('sending'), done: $('done') };
-    const captureBtn     = $('captureBtn');
-    const cameraInput    = $('cameraInput');
-    const thumb          = $('thumb');
-    const docTypeSelect  = $('docTypeSelect');
-    const dispatcherField = $('dispatcherField');
-    const dispatcherSelect = $('dispatcherSelect');
-    const sendBtn        = $('sendBtn');
-    const retakeBtn      = $('retakeBtn');
-    const resultCard     = $('resultCard');
-    const resultIcon     = $('resultIcon');
-    const resultTitle    = $('resultTitle');
-    const resultRows     = $('resultRows');
-    const qualityNote    = $('qualityNote');
-    const anotherBtn     = $('anotherBtn');
-
-    // State
-    let imgBase64 = null;
-    let imgMediaType = null;
-    let lastError = null;
-
+    // Screens
+    const screens = {
+      truckSelect: $('truckSelect'),
+      capture: $('capture'),
+      classify: $('classify'),
+      sending: $('sending'),
+      done: $('done'),
+    };
     function show(name) {
       Object.keys(screens).forEach(k => screens[k].classList.toggle('active', k === name));
     }
 
-    // ── SCREEN 1: CAPTURE ──
-    captureBtn.addEventListener('click', () => cameraInput.click());
+    // Elements
+    const truckDropdown    = $('truckDropdown');
+    const truckContinueBtn = $('truckContinueBtn');
+    const captureTruck     = $('captureTruck');
+    const cameraBtn        = $('cameraBtn');
+    const galleryBtn       = $('galleryBtn');
+    const cameraInput      = $('cameraInput');
+    const galleryInput     = $('galleryInput');
+    const classifyTruck    = $('classifyTruck');
+    const thumb            = $('thumb');
+    const docTypeSelect    = $('docTypeSelect');
+    const dispatcherField  = $('dispatcherField');
+    const dispatcherSelect = $('dispatcherSelect');
+    const sendBtn          = $('sendBtn');
+    const retakeBtn        = $('retakeBtn');
+    const resultCard       = $('resultCard');
+    const resultIcon       = $('resultIcon');
+    const resultTitle      = $('resultTitle');
+    const resultRows       = $('resultRows');
+    const qualityNote      = $('qualityNote');
+    const retryFailBtn     = $('retryFailBtn');
+    const anotherBtn       = $('anotherBtn');
 
-    cameraInput.addEventListener('change', (e) => {
+    // State
+    let truckNumber  = '';
+    let imgBase64    = null;
+    let imgMediaType = null;
+
+    // ── Populate truck dropdown: Unit 101–160 ──
+    for (let i = 101; i <= 160; i++) {
+      const opt = document.createElement('option');
+      opt.value = 'Unit ' + i;
+      opt.textContent = 'Unit ' + i;
+      truckDropdown.appendChild(opt);
+    }
+
+    // ── SCREEN 1: TRUCK SELECT ──
+    truckDropdown.addEventListener('change', () => {
+      truckContinueBtn.disabled = !truckDropdown.value;
+    });
+
+    truckContinueBtn.addEventListener('click', () => {
+      truckNumber = truckDropdown.value;
+      captureTruck.textContent = truckNumber;
+      classifyTruck.textContent = truckNumber;
+      show('capture');
+    });
+
+    // ── SCREEN 2: CAPTURE ──
+    cameraBtn.addEventListener('click', () => cameraInput.click());
+    galleryBtn.addEventListener('click', () => galleryInput.click());
+
+    cameraInput.addEventListener('change', handleFile);
+    galleryInput.addEventListener('change', handleFile);
+
+    function handleFile(e) {
       const file = e.target.files[0];
       if (!file) return;
       const reader = new FileReader();
@@ -310,25 +396,23 @@
         imgBase64 = reader.result.split(',')[1];
         thumb.src = reader.result;
         // Reset classify form
-        docTypeSelect.value = '';
-        dispatcherSelect.value = '';
+        docTypeSelect.selectedIndex = 0;
+        dispatcherSelect.selectedIndex = 0;
         dispatcherField.classList.add('hidden');
         sendBtn.disabled = true;
         show('classify');
       };
       reader.readAsDataURL(file);
       e.target.value = '';
-    });
+    }
 
-    // ── SCREEN 2: CLASSIFY ──
+    // ── SCREEN 3: CLASSIFY ──
     docTypeSelect.addEventListener('change', () => {
-      const type = docTypeSelect.value;
-      // Show dispatcher dropdown only for BOL
-      if (type === 'BOL') {
+      if (docTypeSelect.value === 'BOL') {
         dispatcherField.classList.remove('hidden');
       } else {
         dispatcherField.classList.add('hidden');
-        dispatcherSelect.value = '';
+        dispatcherSelect.selectedIndex = 0;
       }
       updateSendBtn();
     });
@@ -338,7 +422,6 @@
     function updateSendBtn() {
       const type = docTypeSelect.value;
       if (!type) { sendBtn.disabled = true; return; }
-      // If BOL, require dispatcher
       if (type === 'BOL' && !dispatcherSelect.value) { sendBtn.disabled = true; return; }
       sendBtn.disabled = false;
     }
@@ -350,9 +433,10 @@
     });
 
     // ── SEND ──
-    sendBtn.addEventListener('click', async () => {
+    sendBtn.addEventListener('click', doSend);
+
+    async function doSend() {
       show('sending');
-      lastError = null;
 
       try {
         const resp = await fetch('/api/route', {
@@ -362,7 +446,8 @@
             imageBase64: imgBase64,
             mediaType: imgMediaType,
             docType: docTypeSelect.value,
-            dispatcherName: dispatcherSelect.value || null,
+            truckNumber: truckNumber,
+            dispatcherName: docTypeSelect.value === 'BOL' ? dispatcherSelect.value : null,
           }),
         });
 
@@ -376,26 +461,25 @@
         if (navigator.vibrate) navigator.vibrate([100]);
 
       } catch (err) {
-        lastError = err.message;
         showFailed(err.message);
       }
-    });
+    }
 
-    // ── SCREEN 4: DONE ──
+    // ── SCREEN 5: DONE ──
     function showDone(data) {
       const warn = !!data.warning;
       resultCard.className = 'result-card ' + (warn ? 'warning' : 'good');
-      resultCard.onclick = null;
       resultIcon.textContent = warn ? '\u26A0\uFE0F' : '\u2705';
-      resultTitle.textContent = warn ? 'Sent — image may be unclear' : 'Sent';
+      resultTitle.textContent = warn ? 'Sent — image may be unclear' : 'Document Sent';
 
       let rows = '';
+      rows += row('Truck', truckNumber);
       rows += row('Type', data.doc_name || data.doc_type);
       rows += row('Routed to', data.routed_to.join(' + '));
-      if (data.page_info) rows += row('Pages', data.page_info);
       resultRows.innerHTML = rows;
 
       qualityNote.textContent = warn ? 'Consider retaking a clearer photo' : '';
+      retryFailBtn.style.display = 'none';
       show('done');
     }
 
@@ -405,9 +489,11 @@
       resultTitle.textContent = 'Failed — tap to retry';
       resultRows.innerHTML = row('Error', msg);
       qualityNote.textContent = '';
-      resultCard.onclick = () => sendBtn.click();
+      retryFailBtn.style.display = 'block';
       show('done');
     }
+
+    retryFailBtn.addEventListener('click', doSend);
 
     function row(label, value) {
       return '<div class="result-row"><span class="result-label">' + esc(label) +
@@ -417,8 +503,10 @@
     anotherBtn.addEventListener('click', () => {
       imgBase64 = null;
       imgMediaType = null;
-      lastError = null;
-      show('capture');
+      truckDropdown.selectedIndex = 0;
+      truckContinueBtn.disabled = true;
+      truckNumber = '';
+      show('truckSelect');
     });
   </script>
 </body>
